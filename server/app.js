@@ -11,8 +11,11 @@ import userRoute from "./routes/user.js";
 import { connectDB } from "./utils/features.js";
 import { v4 as uuid } from "uuid";
 import { getSockets } from "./lib/helper.js";
+import { v2 as cloudinary } from "cloudinary";
+import cors from "cors";
 import { Message } from "./models/message.js";
 
+import { corsOptions } from "./constants/config.js";
 dotenv.config({
   path: "./.env",
 });
@@ -24,10 +27,19 @@ export const adminSecretKey = process.env.ADMIN_SECRET_KEY || "asdfasdf";
 
 const userSocketIDs = new Map();
 connectDB(mongoURI);
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 const app = express();
 
 const server = createServer(app);
-const io = new Server(server, {});
+const io = new Server(server, {
+  cors: corsOptions,
+});
 
 app.use(express.json());
 app.use(cookieParser());
@@ -43,8 +55,6 @@ app.get("/", (req, res) => {
 });
 
 app.use(errorMiddleware);
-
-
 
 io.on("connection", (socket) => {
   const user = {
@@ -80,15 +90,12 @@ io.on("connection", (socket) => {
       message: messageForRealTime,
     });
     io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
-    
+
     try {
       await Message.create(messageForDB);
-    }catch (error) {
+    } catch (error) {
       console.log(error);
     }
-   
-
-
   });
 
   socket.on("disconnect", () => {
