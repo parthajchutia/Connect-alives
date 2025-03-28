@@ -11,7 +11,7 @@ import {
   sendFriendRequest,
 } from "../controllers/user.js";
 import { acceptRequestValidator, loginValidator, sendRequestValidator } from "../lib/validators.js";
-import { registerValidator, validateHandler } from "../lib/validators.js ";
+import { registerValidator, validateHandler } from "../lib/validators.js";
 import { isAuthenticated } from "../middlewares/auth.js";
 import { singleAvatar } from "../middlewares/multer.js";
 const app = express.Router();
