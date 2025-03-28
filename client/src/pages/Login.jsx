@@ -12,14 +12,17 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { VisuallyHiddenInput } from "../components/styles/StyleComponents";
 import { server } from "../constants/config";
 import { userExists } from "../redux/reducers/auth";
 import { usernameValidator } from "../utils/validators";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,38 +36,38 @@ const Login = () => {
 
   const dispatch = useDispatch();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const toastId = toast.loading("Login...");
-    setIsLoading(true);
+ // Updated Login.jsx handleLogin function
+const handleLogin = async (e) => {
+  e.preventDefault();
+  const toastId = toast.loading("Login...");
+  setIsLoading(true);
 
-    const config = {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
-    try {
-      const { data } = await axios.post(
-        `${server}/api/v1/user/login`,
-        {
-          username: username.value,
-          password: password.value,
-        },
-        config
-      );
+  try {
+    const { data } = await axios.post(
+      `${server}/api/v1/user/login`,
+      { username: username.value, password: password.value },
+      { 
+        withCredentials: true, 
+        headers: { "Content-Type": "application/json" } 
+      }
+    );
 
-      dispatch(userExists(data.user));
-      toast.success(data.message, { id: toastId });
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Login failed", {
-        id: toastId,
-      });
-    } finally {
-      setIsLoading(false);
+    dispatch(userExists(data.user));
+    toast.success(data.message, { id: toastId });
+    
+    // Force full page reload to ensure cookie is set
+    window.location.reload();
+
+  } catch (error) {
+    toast.error(error?.response?.data?.message || "Login failed", { id: toastId });
+    if (error.response?.status === 401) {
+      username.setValue("");
+      password.setValue("");
     }
-  };
-
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleSignup = async (e) => {
     e.preventDefault();
     const toastId = toast.loading("Creating account...");
@@ -85,6 +88,7 @@ const Login = () => {
 
       dispatch(userExists(data.user));
       toast.success(data.message, { id: toastId });
+      navigate("/");
     } catch (error) {
       toast.error(error?.response?.data?.message || "Something went wrong", {
         id: toastId,
