@@ -83,7 +83,7 @@ const Header = () => {
                 display: { xs: "none", sm: "block" },
               }}
             >
-              Fun Chat
+              Connect Alives
             </Typography>
 
             <Box
